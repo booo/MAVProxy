@@ -113,6 +113,7 @@ class movinghome(mp_module.MPModule):
             data = self.ser.readline()
             try:
                 data = data.decode("ascii")
+                #print(data)
             except UnicodeDecodeError as e:
                 # this is probably a baudrate issue
                 now = time.time()
@@ -120,7 +121,7 @@ class movinghome(mp_module.MPModule):
                     print("movinghome: decode error; baudrate issue?")
                     self.last_decode_error_print = now
                 return
-            if (data.startswith("$GPGGA")):
+            if "GGA" in data:
                 msg = pynmea2.parse(data)
                 if int(msg.num_sats) > 5:
                     #convert LAT
@@ -149,13 +150,15 @@ class movinghome(mp_module.MPModule):
                             message = "GCS moved "
                             message2 = message + "%.0f" % self.dist + "meters"
                             self.say("%s: %s" % (self.name,message2))
-                            message2_enc = message2.encode(bytes)
-                            self.master.mav.statustext_send(mavutil.mavlink.MAV_SEVERITY_NOTICE, message2)
+                            #message2_enc = message2.encode(bytes)
+                            print("foo")
+                            #self.master.mav.statustext_send(mavutil.mavlink.MAV_SEVERITY_NOTICE, message2)
+                            print("bar")
                         self.console.writeln("home position updated")
 
                         self.master.mav.command_int_send(
                         self.settings.target_system, self.settings.target_component,
-                        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                        mavutil.mavlink.MAV_FRAME_GLOBAL_INT,
                         mavutil.mavlink.MAV_CMD_DO_SET_HOME,
                         1, # (1, set current location as home)
                         0, # move on
@@ -166,6 +169,7 @@ class movinghome(mp_module.MPModule):
                         int(self.lat*1e7), # param5
                         int(self.lon*1e7), # param6
                         0) # param7
+                        print("baz")
 
                         self.lath = self.lat
                         self.lonh = self.lon
