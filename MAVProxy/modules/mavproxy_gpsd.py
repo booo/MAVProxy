@@ -80,7 +80,7 @@ class GPSDModule(mp_module.MPModule):
         try:
             result = next(self.client.dict_stream(
                     convert_datetime=True,
-                    filter=["TPV"]
+                    filter=["TPV", "SKY"]
                     ))
         except StopIteration as ex:
             return
