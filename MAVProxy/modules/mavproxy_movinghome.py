@@ -103,7 +103,7 @@ class movinghome(mp_module.MPModule):
         # check if we have a position and the position contains actual data from
         # a GGA message, if there is a latitude the rest exists as well
         if position and position.latitude:
-            if position.num_sats > 5 and (time_now - self.last_check > self.check_interval) :
+            if position.num_sats and position.num_sats > 5 and (time_now - self.last_check > self.check_interval):
 
                 self.last_check = time_now
                 # check if we moved enough
