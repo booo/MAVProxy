@@ -54,7 +54,10 @@ class GPSDModule(mp_module.MPModule):
             )
         except Exception as ex:
             print("Failed to open %s:%s - %s" % (self.host, self.port, ex))
-
+        self.stream = self.client.dict_stream(
+                convert_datetime=True,
+                filter=["TPV", "SKY"]
+                )
     def cmd_disconnect(self):
         '''disconnect from GPS'''
         if self.client is not None:
@@ -78,10 +81,7 @@ class GPSDModule(mp_module.MPModule):
         if self.client is None:
             return
         try:
-            result = next(self.client.dict_stream(
-                    convert_datetime=True,
-                    filter=["TPV", "SKY"]
-                    ))
+            result = next(self.stream)
         except StopIteration as ex:
             return
         self.position.num_sats = result.get("uSat", self.position.num_sats)
