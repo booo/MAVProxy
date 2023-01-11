@@ -147,6 +147,7 @@ class movinghome(mp_module.MPModule):
 
                     self.lath = position.latitude
                     self.lonh = position.longitude
+                    self.alth = position.altitude
                     # self.console.writeln("%s: %s %s GNSS Quality %s Sats %s " % (self.name, self.lat, self.lon, msg.gps_qual, msg.num_sats))
 
 
