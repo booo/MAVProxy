@@ -132,7 +132,7 @@ class movinghome(mp_module.MPModule):
                     self.master.mav.command_int_send(
                         self.settings.target_system,
                         self.settings.target_component,
-                        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                        mavutil.mavlink.MAV_FRAME_GLOBAL_INT,
                         mavutil.mavlink.MAV_CMD_DO_SET_HOME,
                         1, # (1, set current location as home)
                         0, # move on
@@ -142,7 +142,8 @@ class movinghome(mp_module.MPModule):
                         0, # param4
                         int(position.latitude * 1e7), # param5
                         int(position.longitude * 1e7), # param6
-                        0 # param7
+                        0 # param7, for use at sea we set this to 0 for now.
+                        # Elevation models report 0 too at sea
                     )
 
                     self.lath = position.latitude
