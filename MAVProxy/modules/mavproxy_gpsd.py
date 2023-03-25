@@ -53,7 +53,7 @@ class GPSDModule(mp_module.MPModule):
                     port=self.gpsd_settings.port
             )
         except Exception as ex:
-            print("Failed to open %s:%s - %s" % (self.host, self.port, ex))
+            print("Failed to open %s:%s - %s" % (self.gpsd_settings.host, self.gpsd_settings.port, ex))
         self.stream = self.client.dict_stream(
                 convert_datetime=True,
                 filter=["TPV", "SKY"]
