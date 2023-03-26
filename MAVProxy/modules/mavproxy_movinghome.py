@@ -133,9 +133,8 @@ class movinghome(mp_module.MPModule):
                         self.settings.target_system,
                         self.settings.target_component,
                         mavutil.mavlink.MAV_CMD_DO_SET_HOME,
+                        0, # confirmation
                         0, # (0, set location specified in msg)
-                        0, # move on
-                        0, # param1
                         0, # param2
                         0, # param3
                         0, # param4
