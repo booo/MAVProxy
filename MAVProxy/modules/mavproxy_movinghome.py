@@ -20,6 +20,7 @@ from MAVProxy.modules.lib import mp_module
 from MAVProxy.modules.lib import mp_util
 from MAVProxy.modules.lib import mp_settings
 
+from MAVProxy.modules.mavproxy_map.mp_elevation import ElevationModel
 
 class movinghome(mp_module.MPModule):
     def __init__(self, mpstate):
@@ -36,6 +37,7 @@ class movinghome(mp_module.MPModule):
         self.last_check = time.time()
         self.fresh = True # fresh start/first movement
         self.dist = 0
+        self.EleModel = ElevationModel(database='srtm', offline=1, debug=True)
 
         self.add_command('movinghome', self.cmd_movinghome, "movinghome module")
 
@@ -129,6 +131,11 @@ class movinghome(mp_module.MPModule):
                                 )
                     self.console.writeln("Home position updated")
 
+                    srtm_alt = self.EleModel.GetElevation(position.latitude, position.longitude, timeout=10) # returns 0 at sea
+                    if srtm_alt is None: # just in case...
+                        srtm_alt=0
+                    self.console.writeln("SRTM-Altitude: {}m".format(srtm_alt))
+
                     self.master.mav.command_long_send(
                         self.settings.target_system,
                         self.settings.target_component,
@@ -140,7 +147,7 @@ class movinghome(mp_module.MPModule):
                         0, # param4
                         position.latitude, # param5
                         position.longitude, # param6
-                        0 # param7, for use at sea we set this to 0 for now.
+                        srtm_alt # param7,
                         # Elevation models report 0 too at sea
                     )
 
