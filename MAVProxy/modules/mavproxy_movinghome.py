@@ -129,7 +129,6 @@ class movinghome(mp_module.MPModule):
                                 mavutil.mavlink.MAV_SEVERITY_NOTICE,
                                 message.encode("utf-8")
                                 )
-                    self.console.writeln("Home position updated")
 
                     srtm_alt = self.EleModel.GetElevation(position.latitude, position.longitude, timeout=0) # returns 0 at sea - timeout==0 means try to download once
                     if srtm_alt is None: # just in case...
@@ -155,6 +154,8 @@ class movinghome(mp_module.MPModule):
                     self.lonh = position.longitude
                     self.alth = position.altitude
                     # self.console.writeln("%s: %s %s GNSS Quality %s Sats %s " % (self.name, self.lat, self.lon, msg.gps_qual, msg.num_sats))
+
+                    self.console.writeln("Home position update sent...")
 
 
     def haversine(self, lon1, lat1, alt1, lon2, lat2, alt2):
