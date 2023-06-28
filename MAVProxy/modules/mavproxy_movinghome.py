@@ -37,7 +37,7 @@ class movinghome(mp_module.MPModule):
         self.last_check = time.time()
         self.fresh = True # fresh start/first movement
         self.dist = 0
-        self.EleModel = ElevationModel(database='srtm', offline=1, debug=True)
+        self.EleModel = ElevationModel(database='srtm', offline=1, debug=False)
 
         self.add_command('movinghome', self.cmd_movinghome, "movinghome module")
 
@@ -131,7 +131,7 @@ class movinghome(mp_module.MPModule):
                                 )
                     self.console.writeln("Home position updated")
 
-                    srtm_alt = self.EleModel.GetElevation(position.latitude, position.longitude, timeout=10) # returns 0 at sea
+                    srtm_alt = self.EleModel.GetElevation(position.latitude, position.longitude, timeout=0) # returns 0 at sea - timeout==0 means try to download once
                     if srtm_alt is None: # just in case...
                         srtm_alt=0
                     self.console.writeln("SRTM-Altitude: {}m".format(srtm_alt))
