@@ -747,6 +747,8 @@ class LinkModule(mp_module.MPModule):
                 if (m.target_component not in [mavutil.mavlink.MAV_COMP_ID_MAVCAN] and
                     m.command not in [mavutil.mavlink.MAV_CMD_GET_HOME_POSITION]):
                     self.mpstate.console.writeln("Got COMMAND_ACK: %s: %s" % (cmd, res))
+                if (m.command == mavutil.mavlink.MAV_CMD_DO_SET_HOME):
+                    self.mpstate.time_last_home_ack = time.time()
             except Exception:
                 self.mpstate.console.writeln("Got MAVLink msg: %s" % m)
 
