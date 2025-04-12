@@ -128,7 +128,7 @@ class movinghome(mp_module.MPModule):
     def connect_to_gqc(self):
         target_system=self.mpstate.settings.target_system
         if target_system and target_system != 0:
-            self.qgc_connection = mavutil.mavlink_connection('udpout:0.0.0.0:14550', source_system=target_system, source_component=220)
+            self.qgc_connection = mavutil.mavlink_connection('tcp:0.0.0.0:5760', source_system=target_system, source_component=220)
 
     def idle_task(self):
 
