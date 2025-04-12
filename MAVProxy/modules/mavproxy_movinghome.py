@@ -38,7 +38,7 @@ class movinghome(mp_module.MPModule):
         self.fresh = True # fresh start/first movement
         self.dist = 0
         # home position ack settings
-        self.home_position_ack_timeout = 3 # seconds
+        self.home_position_ack_timeout = 8 # seconds
         self.last_home_position_ack = None # last acknowledged home position 
         self.time_last_home_sent = None # time of last home position sent
         self.mpstate.time_last_home_ack = None # time of last home position ack - shared variable from mavproxy_link module
