@@ -37,8 +37,15 @@ class movinghome(mp_module.MPModule):
         self.last_check = time.time()
         self.fresh = True # fresh start/first movement
         self.dist = 0
+        # home position ack settings
+        self.home_position_ack_timeout = 8 # seconds
+        self.last_home_position_ack = None # last acknowledged home position 
+        self.time_last_home_sent = None # time of last home position sent
+        self.mpstate.time_last_home_ack = None # time of last home position ack - shared variable from mavproxy_link module
+        self.qgc_connection = None # to send messages to QGC
+        self.debug_ack = False
+        # elevation model
         self.EleModel = ElevationModel(database='srtm', offline=1, debug=False)
-
         self.add_command('movinghome', self.cmd_movinghome, "movinghome module")
 
 
@@ -88,6 +95,41 @@ class movinghome(mp_module.MPModule):
         self.updates_enabled = False
         print("Home position will not be updated.")
 
+    def check_home_position_ack(self):
+        time_last_home_ack=self.mpstate.time_last_home_ack
+        if time_last_home_ack is None:
+            self.alert_mavproxy_and_qgc("Never received a Home position ACK! Dont take off!", mavutil.mavlink.MAV_SEVERITY_CRITICAL)
+        elif time_last_home_ack and self.time_last_home_sent:
+            time_since_last_ack =  time_last_home_ack - self.time_last_home_sent
+            if self.debug_ack:
+                self.alert_mavproxy_and_qgc("Home pos time_since_last_ack: %s s" % round(time_since_last_ack,4),mavutil.mavlink.MAV_SEVERITY_CRITICAL)
+            if time_since_last_ack > self.home_position_ack_timeout: # Timeout
+                self.alert_mavproxy_and_qgc("Home position ACK timed out: %s s" % round(time_since_last_ack,4),mavutil.mavlink.MAV_SEVERITY_CRITICAL)
+                if self.last_home_position_ack:
+                    self.alert_mavproxy_and_qgc("Last successful sent home position",mavutil.mavlink.MAV_SEVERITY_CRITICAL)
+                    self.alert_mavproxy_and_qgc("lat:%s lon:%s" % (round(self.lath,4), round(self.lonh,4)),mavutil.mavlink.MAV_SEVERITY_CRITICAL) # ~11m accuracy
+            else: # save last acknowledged home position 
+                self.last_home_position_ack = {"lat": self.lath, "lon": self.lonh, "alt": self.alth}
+
+    def alert_mavproxy_and_qgc(self, msg, severity=mavutil.mavlink.MAV_SEVERITY_NOTICE):
+        # Send alert to mavproxy console
+        self.console.writeln(
+            msg,
+        )
+        # Send alert to QGC
+        if self.qgc_connection is None:    
+            self.connect_to_gqc()
+        if self.qgc_connection is not None:
+            self.qgc_connection.mav.statustext_send(
+                severity,
+                msg.encode("utf-8")
+            )
+            
+    def connect_to_gqc(self):
+        target_system=self.mpstate.settings.target_system
+        if target_system and target_system != 0:
+            self.qgc_connection = mavutil.mavlink_connection('tcp:0.0.0.0:5760', source_system=target_system, source_component=220)
+
     def idle_task(self):
 
         # Called frequently by mavproxy
@@ -106,6 +148,7 @@ class movinghome(mp_module.MPModule):
         # a GGA message, if there is a latitude the rest exists as well
         if position and position.latitude:
             if position.num_sats and position.num_sats > 5 and (time_now - self.last_check > self.check_interval):
+                self.check_home_position_ack()
 
                 self.last_check = time_now
                 # check if we moved enough
@@ -149,6 +192,7 @@ class movinghome(mp_module.MPModule):
                         srtm_alt # param7,
                         # Elevation models report 0 too at sea
                     )
+                    self.time_last_home_sent = time.time()
 
                     self.lath = position.latitude
                     self.lonh = position.longitude
